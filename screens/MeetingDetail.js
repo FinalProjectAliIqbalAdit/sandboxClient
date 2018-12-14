@@ -31,7 +31,7 @@ export class MeetingDetail extends Component {
         return (
             <>
                 <View>
-                    <Text> meeting detail </Text>
+                    <Text> {JSON.stringify(this.props.navigation.state.params.meeting,null,2)} </Text>
                 </View>
             </>
         );

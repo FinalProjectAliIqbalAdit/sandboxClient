@@ -5,15 +5,21 @@ import { connect } from 'react-redux'
 import { fetchMeetings } from "../store/meetingsAction";
 
 import MeetingCard from '../components/MeetingCard'
+import axios from '../config/axios'
 
 class Meetings extends Component {
 
     componentDidMount(){
-      // this.props.fetchMeetings()
+      this.props.fetchMeetings()
     }
-
+    
     showDetail = (title, meeting) => {
-      this.props.navigation.navigate('MeetingDetail', { title, meeting })
+      axios.get(`/meetings/users/${meeting._id}`)
+        .then(({data}) => {
+          this.props.navigation.navigate('Map', { data, title, meeting, user : this.props.user })
+        }).catch((err) => {
+          alert(JSON.stringify(err.response,null,2))
+        });
     }
     
     render(){
@@ -27,7 +33,6 @@ class Meetings extends Component {
   
       return(
         <View style={{flex: 1}}>
-          <Text> {JSON.stringify(this.props)} </Text>
           <FlatList
             data={this.props.meetings}
             renderItem={({item}) => {
@@ -48,7 +53,8 @@ const mapStateToProps = (state) => {
   return {
     loading : state.meetings.loading,
     meetings : state.meetings.meetings,
-    error : state.meetings.error
+    error : state.meetings.error,
+    user: state.login.user
   }
 }
 

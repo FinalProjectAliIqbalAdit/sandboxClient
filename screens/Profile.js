@@ -1,45 +1,83 @@
-import React, {Component} from 'react';
-import { StyleSheet, Text, View} from 'react-native';
+import React from 'react';
+import { View, Text } from 'react-native';
+import MapView from 'react-native-maps';
+import axios from '../config/axios'
 
-const styles = StyleSheet.create({
-    profileWrapper: {
-        flex: 2,
-        flexDirection : 'row',
-      justifyContent: 'space-around',
-      alignItems: 'flex-start',
-      backgroundColor: '#FFFCFF',
-    },
-    box : {
-        borderWidth: 1,
-        borderRadius: 2,
-        borderColor: '#ddd',
-        borderBottomWidth: 0,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 1,
-        marginLeft: 5,
-        marginRight: 5,
-        marginTop: 10,
-        width : '48%',
-        padding : 10
+export default class MyMap extends React.Component {
+    state = {
+        latitude: -6.1754,
+        longitude: 106.8272,
+        latitudeDelta: 0.002,
+        longitudeDelta: 0.002,
+        error : null,
     }
 
-});
+    componentDidMount() {
 
-export default class Profile extends Component {
-  render() {
-    return (
-      <View style={styles.profileWrapper}>
-        <View style={styles.box}>
-            <Text> Aku </Text>
-        </View>
-        <View style={styles.box}>
-            <Text> Bisa </Text>
-        </View>
-      </View>
-    );
-  }
+        this.watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                this.setState({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    error: null
+                })
+            }, 
+            (error) => {
+                this.setState({
+                    error: error.message
+                })
+            },
+            {enableHighAccuracy : false, timeout: 20000, maximumAge: 10000, distanceFilter: 10 }
+        )
+    }
+
+    getCurrentLocation() {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                axios.get('/users')
+                .then((result) => {
+                    alert(JSON.stringify(result.data,null,2))
+                }).catch((err) => {
+                    alert(JSON.stringify(err.response,null,2))
+                    
+                });
+            },
+            (error) => {
+                this.setState({
+                    error: error.message
+                })
+                alert(JSON.stringify(error.message,null,2))
+            },
+            {enableHighAccuracy : false, timeout: 20000, maximumAge: 10000}
+        )
+    }
+    
+    render() {
+        this.getCurrentLocation()
+        return (
+            <MapView style={styles.map} initialRegion={this.state}>
+                <MapView.Marker coordinate={this.state} />
+            </MapView>
+        );
+    }
 }
 
+const styles = {
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff'
+    },
+    text: {
+        fontSize: 30,
+        fontWeight: '700',
+        color: '#59656C',
+        marginBottom: 10,
+    },
+    map: {
+        // width: 300,
+        // height: 300,
+        flex: 1,
+    }
+};
